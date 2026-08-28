@@ -259,7 +259,7 @@ tfoot td.or{color:var(--orange);}
 
   <div class="card">
     <div class="ch"><div class="ci">💰</div><div class="ct">Pagamento à Construtora — Entrada (35%)</div></div>
-    <div class="cs">Ao alterar <strong>Entrada (Ato)</strong>, os outros dois redistribuem proporcionalmente. Ao alterar <strong>Parcelas</strong> ou <strong>Reforços</strong>, o outro ajusta automaticamente para fechar o total.</div>
+    <div class="cs"><strong>Ato</strong> e <strong>Reforços</strong> são sempre manuais. O <strong>valor da parcela</strong> se ajusta automaticamente ao nº de parcelas para sempre fechar o total — nunca pode exceder a entrada à construtora.</div>
     <div class="pag3">
       <div class="pb">
         <div class="pb-t"><div class="pdot" style="background:var(--navy)"></div>Ato (Entrada)</div>
@@ -486,16 +486,26 @@ function setMF(fId,hId,val){
 function redist(changed){
   if(_busy)return; _busy=true;
   const{ve}=getM();
-  const{a,p,pN,r,rN,tp,tr}=getPag();
-  if(changed==='ato'){
-    const resto=Math.max(0,ve-a), tot=tp+tr;
-    if(tot<0.01){ setMF('pFmt','parc',pN>0?resto/pN:0); setMF('rFmt','ref',0); }
-    else{ setMF('pFmt','parc',pN>0?(resto*(tp/tot))/pN:0); setMF('rFmt','ref',rN>0?(resto*(tr/tot))/rN:0); }
-  } else if(changed==='parc'||changed==='parcN'){
-    setMF('rFmt','ref',rN>0?Math.max(0,ve-a-p*pN)/rN:0);
+  const{a,p,pN,r,rN,tr}=getPag();
+
+  // Ato e Reforcos sao sempre manuais.
+  // Parcelas (valor x nº) fecham sempre a conta.
+  const restoParc = Math.max(0, ve - a - tr);
+
+  if(changed==='parc'){
+    // Usuario digitou valor da parcela: recalcula o nº de parcelas
+    const maxN = +document.getElementById('parcN').max || 24;
+    const novoN = p > 0 ? Math.max(1, Math.min(Math.round(restoParc / p), maxN)) : pN;
+    _busy = false;
+    document.getElementById('parcN').value = novoN;
+    _busy = true;
+    setMF('pFmt','parc', novoN > 0 ? restoParc / novoN : 0);
   } else {
-    setMF('pFmt','parc',pN>0?Math.max(0,ve-a-r*rN)/pN:0);
+    // Qualquer outra mudanca (ato, ref, parcN, freq):
+    // mantem o nº de parcelas, recalcula o VALOR da parcela
+    setMF('pFmt','parc', pN > 0 ? restoParc / pN : 0);
   }
+
   updFech(); _busy=false;
 }
 function updFech(){

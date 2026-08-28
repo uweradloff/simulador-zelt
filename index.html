@@ -225,6 +225,20 @@ tfoot td.or{color:var(--orange);}
       <div class="obra-i">
         <h4 id="ob-tit">Evolução da Obra</h4>
         <p id="ob-desc">—</p>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;">
+          <label style="color:rgba(255,255,255,.55);font-size:11px;letter-spacing:.5px;text-transform:uppercase;margin:0;white-space:nowrap;">% manual</label>
+          <div style="display:flex;align-items:center;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:7px;overflow:hidden;">
+            <input type="text" id="percManualFmt" placeholder="automático" inputmode="numeric"
+              style="width:90px;border:none;background:transparent;padding:6px 8px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;outline:none;"
+              oninput="onPercManualInput(this.value)"
+            >
+            <span style="color:rgba(255,255,255,.5);font-size:12px;padding:0 8px 0 0;">%</span>
+          </div>
+          <button onclick="resetPercManual()" title="Restaurar automático"
+            style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);font-size:11px;padding:5px 10px;border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;">
+            ↺ Auto
+          </button>
+        </div>
       </div>
       <div class="obra-b"><span id="ob-perc">—</span><small>concluído</small></div>
     </div>
@@ -373,14 +387,20 @@ tfoot td.or{color:var(--orange);}
 
 <script>
 // OBRA: Fev/2026=35%, Fev/2028=100% (24 meses, +2.708%/mês)
-const OBRA_REF   = new Date(2026,1,1);
-const OBRA_MESES = 24;
-const OBRA_P0    = 35;
-const P_MES      = (100 - OBRA_P0) / OBRA_MESES; // 2.7083...
+const OBRA_REF   = new Date(2026,7,1);  // Agosto/2026
+const OBRA_MESES = 18;                // Ago/2026 → Fev/2028
+const OBRA_P0    = 46;                // 46% em Ago/2026
+const P_MES      = (100 - OBRA_P0) / OBRA_MESES; // ~3.0%/mês
+
+// % manual sobrepõe o automático quando definido
+let _percManual = null; // null = usa automático
 const TODAY      = new Date();
 
 function diffM(a,b){ return (b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth()); }
-function percHoje(){ return Math.min(100, OBRA_P0 + P_MES * Math.max(0, diffM(OBRA_REF, TODAY))); }
+function percHoje(){
+  if(_percManual !== null) return _percManual;
+  return Math.min(100, OBRA_P0 + P_MES * Math.max(0, diffM(OBRA_REF, TODAY)));
+}
 function mesesRestantes(){
   const e = new Date(OBRA_REF);
   e.setMonth(e.getMonth() + OBRA_MESES);
@@ -450,14 +470,31 @@ function updRes(){
   updFech();
 }
 
+function onPercManualInput(val){
+  const digits = val.replace(/[^\d,]/g,'');
+  document.getElementById('percManualFmt').value = digits;
+  const n = parseFloat(digits.replace(',','.'));
+  if(!isNaN(n) && n >= 0 && n <= 100){
+    _percManual = n;
+  } else if(digits === ''){
+    _percManual = null;
+  }
+  updObra();
+}
+function resetPercManual(){
+  _percManual = null;
+  document.getElementById('percManualFmt').value = '';
+  updObra();
+}
 function updObra(){
   const po=percHoje(), mr=mesesRestantes();
   const e=new Date(OBRA_REF); e.setMonth(e.getMonth()+OBRA_MESES);
   document.getElementById('ob-tit').textContent='Evolução da Obra — '+fmtDC(TODAY);
+  const fonte = _percManual !== null ? ' · ⚠️ valor manual' : ' · atualização automática';
   document.getElementById('ob-desc').textContent=
     po.toFixed(1)+'% concluído hoje · '+mr+' meses para entrega · Previsão: '+
     e.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})+
-    ' · SBPE · Caixa Econômica Federal';
+    ' · SBPE · Caixa Econômica Federal'+fonte;
   document.getElementById('ob-perc').textContent=po.toFixed(1)+'%';
   document.getElementById('hdrDate').textContent=fmtDC(TODAY);
 }

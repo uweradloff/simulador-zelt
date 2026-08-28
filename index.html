@@ -559,12 +559,21 @@ function updFech(){
 }
 
 function resetForm(){
+  // Reseta campos principais
   document.getElementById('vi').value=595000; document.getElementById('viFmt').value='595.000,00';
   document.getElementById('pf').value=65;     document.getElementById('pfFmt').value='65,00';
   document.getElementById('ta').value=10.5;   document.getElementById('taFmt').value='10,50';
   document.getElementById('nc').value='';
   document.getElementById('rFreq').value='semestral';
+
+  // Reseta % manual da obra
+  _percManual = null;
+  document.getElementById('percManualFmt').value = '';
+
+  // Atualiza banner da obra
   updObra();
+
+  // Recalcula valores
   const{ve,mr}=getM();
   const n=Math.min(mr,24);
   document.getElementById('parcN').value=n;

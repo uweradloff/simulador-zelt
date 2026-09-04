@@ -248,8 +248,8 @@ tfoot td.or{color:var(--orange);}
         <div class="fw"><span class="pfx">R$</span><input class="fi" type="text" id="viFmt" value="595.000,00" inputmode="numeric"><input type="hidden" id="vi" value="595000"></div>
       </div>
       <div class="fg">
-        <label>% a Financiar (máx. 65%)</label>
-        <div class="fw"><input class="fi" type="text" id="pfFmt" value="65,00" inputmode="numeric" style="text-align:right"><span class="sfx">%</span><input type="hidden" id="pf" value="65"></div>
+        <label>% a Financiar (máx. 75%)</label>
+        <div class="fw"><input class="fi" type="text" id="pfFmt" value="75,00" inputmode="numeric" style="text-align:right"><span class="sfx">%</span><input type="hidden" id="pf" value="65"></div>
       </div>
       <div class="fg">
         <label>Taxa de Juros Anual (SBPE)</label>
@@ -450,7 +450,7 @@ function setupDec(fId,hId,max,cb){
 
 function getM(){
   const vi=+document.getElementById('vi').value||0;
-  const pf=+document.getElementById('pf').value||65;
+  const pf=+document.getElementById('pf').value||75;
   const ta=+document.getElementById('ta').value||0;
   const nome=document.getElementById('nc').value.trim();
   const vf=vi*pf/100, ve=vi-vf;
@@ -561,7 +561,7 @@ function updFech(){
 function resetForm(){
   // Reseta campos principais
   document.getElementById('vi').value=595000; document.getElementById('viFmt').value='595.000,00';
-  document.getElementById('pf').value=65;     document.getElementById('pfFmt').value='65,00';
+  document.getElementById('pf').value=75;     document.getElementById('pfFmt').value='75,00';
   document.getElementById('ta').value=10.5;   document.getElementById('taFmt').value='10,50';
   document.getElementById('nc').value='';
   document.getElementById('rFreq').value='semestral';
@@ -655,7 +655,7 @@ function doPrint(){
 }
 
 setupMoney('viFmt','vi',updRes);
-setupDec('pfFmt','pf',65,updRes);
+setupDec('pfFmt','pf',75,updRes);
 setupDec('taFmt','ta',null,updRes);
 setupMoney('aFmt','ato',()=>redist('ato'));
 setupMoney('pFmt','parc',()=>redist('parc'));
